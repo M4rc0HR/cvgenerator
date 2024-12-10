@@ -131,64 +131,70 @@ export default function Home() {
 
 
 
-
-
   const generarPDFDinamico = () => {
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
-    const pageHeight = doc.internal.pageSize.getHeight(); // Altura total de la página
+    const pageHeight = doc.internal.pageSize.getHeight();
   
-    const marginLeft = 15;
-    const marginRight = pageWidth / 2 + 5;
+    const marginLeft = 20;
+    const marginRight = pageWidth / 2 - 10;
   
-    let yPositionLeft = 80;
-    let yPositionRight = 80;
+    let yPositionLeft = 90;
+    let yPositionRight = 75;
   
-    // Franja azul vertical (columna izquierda)
-    const headerHeight = pageHeight; // Para que la franja azul cubra toda la altura de la página
-    doc.setFillColor(133, 193, 233); // Color azul (RGB: 0, 0, 255)
-    doc.rect(0, 0, pageWidth / 2, headerHeight, "F"); // Dibuja el rectángulo azul (F: fill) solo en la mitad izquierda
+    // Configuración de la franja horizontal (detrás del nombre)
+    const horizontalStripeWidth = pageWidth;
+    const horizontalStripeHeight = 60;
+    const horizontalStripeColor = [20, 63, 114]; // Color azul oscuro (RGB)
   
-    // Franja azul horizontal detrás del nombre y apellidos
-    const horizontalStripeHeight = 60; // Altura de la franja horizontal
-    doc.rect(0, 0, pageWidth, horizontalStripeHeight, "F"); // Dibuja la franja horizontal en la parte superior
+    doc.setFillColor(...horizontalStripeColor);
+    doc.rect(0, 0, horizontalStripeWidth, horizontalStripeHeight, "F");
+  
+    // Configuración de la franja vertical (columna izquierda)
+    const verticalStripeWidth = 75;
+    const verticalStripeHeight = pageHeight;
+    const verticalStripeColor = [56, 109, 173]; // Color azul claro (RGB)
+  
+    doc.setFillColor(...verticalStripeColor);
+    doc.rect(10, 0, verticalStripeWidth, verticalStripeHeight, "F");
   
     // Nombre y Apellidos (centrado)
+
     doc.setFontSize(40);
-    doc.setTextColor(40, 116, 166); // Color blanco para el texto
-    doc.text(personalInfo.nombres, (pageWidth / 2) + 32, 25, { align: "center" });
-    doc.text(personalInfo.apellidos, (pageWidth / 2) + 32, 40, { align: "center" });
+    doc.setTextColor(255, 255, 255);
+    doc.text(personalInfo.nombres, (pageWidth / 2) + 42, 23, { align: "center" });
+    doc.text(personalInfo.apellidos, (pageWidth / 2) + 42, 38, { align: "center" });
   
     // Cargo actual (debajo del nombre)
     doc.setFontSize(20);
-    doc.text(`${personalInfo.paginaWeb}`, (pageWidth / 2) + 32, 52, { align: "center" });
+    doc.text(`${personalInfo.paginaWeb}`, (pageWidth / 2) + 42, 50, { align: "center" });
   
     // Imagen de perfil (si existe)
     if (personalInfo.imagen) {
-      doc.addImage(personalInfo.imagen, "JPEG", 20, 20, 50, 50); // X: 10, Y: 10, Ancho: 50, Alto: 50
+      doc.addImage(personalInfo.imagen, "JPEG", 20, 20, 55, 55);
     }
+
   
     doc.setFontSize(14);
-    doc.setTextColor(0, 0, 0);
+    doc.setTextColor(255, 255, 255);
   
-    // Función para agregar texto con separación consistente
     const addTextWithSpacing = (text, yPos, margin) => {
       doc.text(text, margin, yPos);
-      return yPos + 8; // Espaciado de 8 píxeles después de cada texto
+      return yPos + 8 ; // Espaciado consistente
     };
   
     // Información de contacto (Columna Izquierda)
     yPositionLeft = addTextWithSpacing("Teléfono:", yPositionLeft, marginLeft);
     yPositionLeft = addTextWithSpacing(`${personalInfo.telefono || "N/A"}`, yPositionLeft, marginLeft);
-    yPositionLeft += 12; // Espacio extra
+    yPositionLeft += 12;
   
     yPositionLeft = addTextWithSpacing("Email:", yPositionLeft, marginLeft);
     yPositionLeft = addTextWithSpacing(`${personalInfo.email || "N/A"}`, yPositionLeft, marginLeft);
-    yPositionLeft += 12; // Espacio extra
+    yPositionLeft += 12;
   
     yPositionLeft = addTextWithSpacing("Página Web:", yPositionLeft, marginLeft);
     yPositionLeft = addTextWithSpacing(`${personalInfo.paginaWeb || "N/A"}`, yPositionLeft, marginLeft);
-    yPositionLeft += 12; // Espacio extra
+    yPositionLeft += 12;
   
     // Habilidades (Columna Izquierda)
     doc.text("Habilidades:", marginLeft, yPositionLeft);
@@ -196,7 +202,7 @@ export default function Home() {
     habilidades.forEach((habilidad) => {
       yPositionLeft = addTextWithSpacing(`- ${habilidad}`, yPositionLeft, marginLeft);
     });
-    yPositionLeft += 12; // Espacio extra
+    yPositionLeft += 12;
   
     // Educación (Columna Izquierda)
     doc.text("Educación:", marginLeft, yPositionLeft);
@@ -205,45 +211,79 @@ export default function Home() {
       yPositionLeft = addTextWithSpacing(`Carrera: ${edu.carrera}`, yPositionLeft, marginLeft);
       yPositionLeft = addTextWithSpacing(`Institución: ${edu.institucion}`, yPositionLeft, marginLeft);
       yPositionLeft = addTextWithSpacing(`(${edu.fechaInicio} - ${edu.fechaFin})`, yPositionLeft, marginLeft);
-      yPositionLeft += 12; // Espacio extra
+      yPositionLeft += 12;
     });
-  
+
+
+
+
     // Acerca de mí (Columna Derecha)
-    doc.text("Acerca de mí:", marginRight, yPositionRight);
-    yPositionRight += 8;
-  
-    // Dividir el texto largo en varias líneas
-    const acercaDeMiLines = doc.splitTextToSize(personalInfo.acercaDeMi, pageWidth / 2 - 20);
-  
-    // Escribir todo el bloque de texto con justificación
-    doc.text(acercaDeMiLines.join('\n'), marginRight, yPositionRight, { maxWidth: pageWidth / 2 - 20, align: "justify" });
-  
-    // Añadir espacio extra después de la sección de "Acerca de mí"
-    yPositionRight += (acercaDeMiLines.length * 7); // Multiplicamos por 8 para cada línea y luego agregamos espacio adicional
-  
+
+    doc.setTextColor(20, 63, 114);
+    doc.setFontSize(24);
+    doc.setFont(undefined, 'bold')
+    doc.text("Acerca de mí", marginRight, yPositionRight);
+    yPositionRight += 10;
+
+    doc.setFontSize(12);
+
+    doc.setFont(undefined, 'normal')
+    const acercaDeMiLines = doc.splitTextToSize(personalInfo.acercaDeMi, pageWidth / 2 - 2);
+    doc.text(acercaDeMiLines, marginRight, yPositionRight, { maxWidth: pageWidth / 2 - 2 , align: "justify" });
+    yPositionRight += (acercaDeMiLines.length * 5) + 1;
+
+    doc.setDrawColor(20, 63, 114); // Azul oscuro
+    doc.setLineWidth(0.5);
+    doc.line(marginRight, yPositionRight, pageWidth - 10, yPositionRight);
+    yPositionRight += 12;
+
     // Experiencia Laboral (Columna Derecha)
-    doc.text("Experiencia Laboral:", marginRight, yPositionRight);
-    yPositionRight += 8;
+
+    doc.setTextColor(20, 63, 114);
+    doc.setFontSize(24);
+    doc.setFont(undefined, 'bold')
+    doc.text("Experiencia Laboral", marginRight, yPositionRight);
+    yPositionRight += 10;
+
+
+    doc.setFontSize(12);
+    doc.setFont(undefined, 'normal');
     experiencia.forEach((exp) => {
-      yPositionRight = addTextWithSpacing(`Puesto: ${exp.puesto}`, yPositionRight, marginRight);
-      yPositionRight = addTextWithSpacing(`Organización: ${exp.organizacion}`, yPositionRight, marginRight);
-      yPositionRight = addTextWithSpacing(`(${exp.fechaInicio} - ${exp.fechaFin})`, yPositionRight, marginRight);
-  
-      const descripcionLines = doc.splitTextToSize(exp.descripcion, pageWidth / 2 - 20);
-      doc.text(descripcionLines.join('\n'), marginRight, yPositionRight, { maxWidth: pageWidth / 2 - 20 });
-      yPositionRight += descripcionLines.length * 8 + 12; // Ajuste de posición vertical y espacio extra
+      doc.setFont(undefined, 'bold');
+      doc.text('•', marginRight, yPositionRight, { maxWidth: pageWidth / 2, align: 'justify' });
+
+      const puestoLines = doc.splitTextToSize(`${exp.puesto}`, pageWidth / 2 - 4);
+      doc.text(puestoLines, marginRight + 2, yPositionRight, { maxWidth: pageWidth / 2 - 4, align: 'justify' });
+      yPositionRight += puestoLines.length * 6;
+    
+      doc.setFont(undefined, 'normal');
+      const organizacionLines = doc.splitTextToSize(`${exp.organizacion}`, pageWidth / 2 - 4);
+      doc.text(organizacionLines, marginRight + 2, yPositionRight, { maxWidth: pageWidth / 2 - 4, align: 'justify' });
+      yPositionRight += organizacionLines.length * 6;
+    
+      const fechasLine = `(${exp.fechaInicio} - ${exp.fechaFin})`;
+      const fechasLines = doc.splitTextToSize(fechasLine, pageWidth / 2 - 4);
+      doc.text(fechasLines, marginRight + 2, yPositionRight, { maxWidth: pageWidth / 2 - 4, align: 'justify' });
+      yPositionRight += fechasLines.length * 6;
+    
+      const descripcionLines = doc.splitTextToSize(exp.descripcion, pageWidth / 2 - 4);
+      doc.text(descripcionLines, marginRight + 2, yPositionRight, { maxWidth: pageWidth / 2 - 4, align: 'justify' });
+      yPositionRight += descripcionLines.length * 6; // Incrementar por la cantidad de líneas en descripción
     });
+    
+    
   
     // Generar vista previa del PDF
     const pdfBlob = doc.output("blob");
     const pdfURL = URL.createObjectURL(pdfBlob);
   
-    // Mostrar vista previa en un iframe
     document.getElementById("pdfPreview").src = pdfURL;
   };
   
 
 
+
+  
 
   return (
     <div className="min-h-screen bg-gray-100 py-10">
