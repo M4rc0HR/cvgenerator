@@ -105,14 +105,14 @@ export default function Home() {
     updatedEducacion[index].fechaFin = updatedEducacion[index].hastaActualidad
       ? "Hasta la actualidad"
       : "";
-    setEducacion(updatedEducacion); // Corregido: ahora se actualiza `educacion`
+    setEducacion(updatedEducacion);
   };
 
   const addEducacion = () =>
     setEducacion([
       ...educacion,
       { institucion: "", carrera: "", fechaInicio: "", fechaFin: "", hastaActualidad: false, descripcion: "" },
-    ]); // Corregido: ahora se actualiza `educacion`
+    ]);
 
   const removeEducacion = (index) =>
     setEducacion(educacion.filter((_, i) => i !== index));
@@ -160,14 +160,16 @@ export default function Home() {
   
     // Nombre y Apellidos (centrado)
 
-    doc.setFontSize(40);
+    doc.setFont(undefined, 'bold');
+    doc.setFontSize(32);
     doc.setTextColor(255, 255, 255);
-    doc.text(personalInfo.nombres, (pageWidth / 2) + 42, 23, { align: "center" });
-    doc.text(personalInfo.apellidos, (pageWidth / 2) + 42, 38, { align: "center" });
+    doc.text(personalInfo.nombres.toLocaleUpperCase(), (pageWidth / 2) + 42, 23, { align: "center" });
+    doc.text(personalInfo.apellidos.toLocaleUpperCase(), (pageWidth / 2) + 42, 38, { align: "center" });
   
     // Cargo actual (debajo del nombre)
     doc.setFontSize(20);
-    doc.text(`${personalInfo.paginaWeb}`, (pageWidth / 2) + 42, 50, { align: "center" });
+    doc.setFont(undefined, 'normal')
+    doc.text(`${personalInfo.cargo.toLocaleUpperCase()}`, (pageWidth / 2) + 42, 50, { align: "center" });
   
     // Imagen de perfil (si existe)
     if (personalInfo.imagen) {
@@ -183,37 +185,90 @@ export default function Home() {
       return yPos + 8 ; // Espaciado consistente
     };
   
-    // Información de contacto (Columna Izquierda)
-    yPositionLeft = addTextWithSpacing("Teléfono:", yPositionLeft, marginLeft);
-    yPositionLeft = addTextWithSpacing(`${personalInfo.telefono || "N/A"}`, yPositionLeft, marginLeft);
-    yPositionLeft += 12;
-  
-    yPositionLeft = addTextWithSpacing("Email:", yPositionLeft, marginLeft);
-    yPositionLeft = addTextWithSpacing(`${personalInfo.email || "N/A"}`, yPositionLeft, marginLeft);
-    yPositionLeft += 12;
-  
-    yPositionLeft = addTextWithSpacing("Página Web:", yPositionLeft, marginLeft);
-    yPositionLeft = addTextWithSpacing(`${personalInfo.paginaWeb || "N/A"}`, yPositionLeft, marginLeft);
-    yPositionLeft += 12;
-  
-    // Habilidades (Columna Izquierda)
-    doc.text("Habilidades:", marginLeft, yPositionLeft);
-    yPositionLeft += 8;
-    habilidades.forEach((habilidad) => {
-      yPositionLeft = addTextWithSpacing(`- ${habilidad}`, yPositionLeft, marginLeft);
-    });
-    yPositionLeft += 12;
-  
-    // Educación (Columna Izquierda)
-    doc.text("Educación:", marginLeft, yPositionLeft);
-    yPositionLeft += 8;
-    educacion.forEach((edu) => {
-      yPositionLeft = addTextWithSpacing(`Carrera: ${edu.carrera}`, yPositionLeft, marginLeft);
-      yPositionLeft = addTextWithSpacing(`Institución: ${edu.institucion}`, yPositionLeft, marginLeft);
-      yPositionLeft = addTextWithSpacing(`(${edu.fechaInicio} - ${edu.fechaFin})`, yPositionLeft, marginLeft);
-      yPositionLeft += 12;
-    });
 
+    // Información de contacto (Columna Izquierda)
+
+    doc.setFontSize(24);
+    doc.setFont(undefined, 'bold')
+    doc.text("Contacto", marginLeft, yPositionLeft);
+    yPositionLeft += 10;
+
+
+    doc.setFontSize(11);
+    doc.setFont(undefined, 'normal');
+    yPositionLeft = addTextWithSpacing(`${personalInfo.telefono}`, yPositionLeft, marginLeft);
+    yPositionLeft -= 2;
+    yPositionLeft = addTextWithSpacing(`${personalInfo.email}`, yPositionLeft, marginLeft);
+    yPositionLeft -= 2;
+    yPositionLeft = addTextWithSpacing(`${personalInfo.paginaWeb}`, yPositionLeft, marginLeft);
+    yPositionLeft -= 2;
+
+
+    
+     // Linea divisora
+     
+     doc.setDrawColor(255, 255, 255);
+     doc.setLineWidth(0.5);
+
+     doc.line(marginLeft - 5, yPositionLeft, pageWidth - 130, yPositionLeft);
+     yPositionLeft += 12;
+
+    // Habilidades (Columna Izquierda)
+
+    doc.setFontSize(24);
+    doc.setFont(undefined, 'bold')
+    doc.text("Habilidades", marginLeft, yPositionLeft);
+    yPositionLeft += 10;
+
+    doc.setFontSize(11);
+    doc.setFont(undefined, 'normal');
+
+    habilidades.forEach((habilidad) => {
+      yPositionLeft = addTextWithSpacing(`• ${habilidad}`, yPositionLeft - 2, marginLeft);
+    });
+  
+    yPositionLeft -= 2;
+    // Educación (Columna Izquierda)
+    
+    
+       
+     // Linea divisora
+     
+     doc.setDrawColor(255, 255, 255);
+     doc.setLineWidth(0.5);
+
+     doc.line(marginLeft - 5, yPositionLeft, pageWidth - 130, yPositionLeft);
+     yPositionLeft += 12;
+
+
+    doc.setFontSize(24);
+    doc.setFont(undefined, 'bold')
+    doc.text("Educación", marginLeft, yPositionLeft);
+    yPositionLeft += 10;
+
+    doc.setFontSize(11);
+    doc.setFont(undefined, 'normal');
+    educacion.forEach((edu) => {
+      doc.setFont(undefined, 'bold');
+
+      const puestoLines = doc.splitTextToSize(`• ${edu.carrera}`, pageWidth / 2 - 55);
+      doc.text(puestoLines, marginLeft-2 , yPositionLeft, { maxWidth: pageWidth / 2 - 55, align: 'justify' });
+      yPositionLeft += (puestoLines.length * 5) + 1;
+    
+      doc.setFont(undefined, 'normal');
+      const organizacionLines = doc.splitTextToSize(`${edu.institucion}`, pageWidth / 2 - 55);
+      doc.text(organizacionLines, marginLeft - 2, yPositionLeft - 1, { maxWidth: pageWidth / 2 - 55, align: 'justify' });
+      yPositionLeft += (organizacionLines.length * 5) + 1;
+
+      const fechasLine = `${edu.fechaInicio} - ${edu.fechaFin}`;
+      const fechasLines = doc.splitTextToSize(fechasLine, pageWidth / 2 - 55);
+      doc.text(fechasLines, marginLeft - 2, yPositionLeft - 3, { maxWidth: pageWidth / 2 - 55, align: 'justify' });
+      yPositionLeft += 5;
+    
+      const descripcionLines = doc.splitTextToSize(edu.descripcion, pageWidth / 2 - 55);
+      doc.text(descripcionLines, marginLeft - 2, yPositionLeft - 3, { maxWidth: pageWidth / 2 - 55, align: 'justify' });
+    });
+    
 
 
 
@@ -225,14 +280,17 @@ export default function Home() {
     doc.text("Acerca de mí", marginRight, yPositionRight);
     yPositionRight += 10;
 
-    doc.setFontSize(12);
+    doc.setFontSize(11);
 
     doc.setFont(undefined, 'normal')
     const acercaDeMiLines = doc.splitTextToSize(personalInfo.acercaDeMi, pageWidth / 2 - 2);
     doc.text(acercaDeMiLines, marginRight, yPositionRight, { maxWidth: pageWidth / 2 - 2 , align: "justify" });
     yPositionRight += (acercaDeMiLines.length * 5) + 1;
 
-    doc.setDrawColor(20, 63, 114); // Azul oscuro
+
+     // Linea divisora
+     
+    doc.setDrawColor(20, 63, 114);
     doc.setLineWidth(0.5);
     doc.line(marginRight, yPositionRight, pageWidth - 10, yPositionRight);
     yPositionRight += 12;
@@ -246,29 +304,29 @@ export default function Home() {
     yPositionRight += 10;
 
 
-    doc.setFontSize(12);
+    doc.setFontSize(11);
     doc.setFont(undefined, 'normal');
     experiencia.forEach((exp) => {
       doc.setFont(undefined, 'bold');
-      doc.text('•', marginRight, yPositionRight, { maxWidth: pageWidth / 2, align: 'justify' });
 
-      const puestoLines = doc.splitTextToSize(`${exp.puesto}`, pageWidth / 2 - 4);
+      const puestoLines = doc.splitTextToSize(`• ${exp.puesto}`, pageWidth / 2 - 4);
       doc.text(puestoLines, marginRight + 2, yPositionRight, { maxWidth: pageWidth / 2 - 4, align: 'justify' });
-      yPositionRight += puestoLines.length * 6;
+      yPositionRight += puestoLines.length * 5 - 1;
     
       doc.setFont(undefined, 'normal');
       const organizacionLines = doc.splitTextToSize(`${exp.organizacion}`, pageWidth / 2 - 4);
       doc.text(organizacionLines, marginRight + 2, yPositionRight, { maxWidth: pageWidth / 2 - 4, align: 'justify' });
-      yPositionRight += organizacionLines.length * 6;
+      yPositionRight += organizacionLines.length * 5 - 1;
     
       const fechasLine = `(${exp.fechaInicio} - ${exp.fechaFin})`;
       const fechasLines = doc.splitTextToSize(fechasLine, pageWidth / 2 - 4);
       doc.text(fechasLines, marginRight + 2, yPositionRight, { maxWidth: pageWidth / 2 - 4, align: 'justify' });
-      yPositionRight += fechasLines.length * 6;
+      yPositionRight += fechasLines.length * 5 - 1;
     
       const descripcionLines = doc.splitTextToSize(exp.descripcion, pageWidth / 2 - 4);
-      doc.text(descripcionLines, marginRight + 2, yPositionRight, { maxWidth: pageWidth / 2 - 4, align: 'justify' });
-      yPositionRight += descripcionLines.length * 6; // Incrementar por la cantidad de líneas en descripción
+      doc.text(descripcionLines, marginRight + 3, yPositionRight, { maxWidth: pageWidth / 2 - 4, align: 'justify' });
+      yPositionRight += descripcionLines.length * 5 - 1;
+
     });
     
     
@@ -321,6 +379,18 @@ export default function Home() {
                       type="text"
                       name="apellidos"
                       value={personalInfo.apellidos}
+                      onChange={handlePersonalInfoChange}
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+
+                  {/* Campo Cargo */}
+                  <div className="col-span-1">
+                    <label className="block text-gray-600 mb-2">Cargo</label>
+                    <input
+                      type="text"
+                      name="cargo"
+                      value={personalInfo.cargo}
                       onChange={handlePersonalInfoChange}
                       className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
@@ -412,12 +482,6 @@ export default function Home() {
               </section>
 
 
-
-
-
-
-
-
               {/* Habilidades */}
               <section className="mb-8">
                 <h2 className="text-2xl font-semibold text-gray-700 mb-4">Habilidades</h2>
@@ -440,80 +504,6 @@ export default function Home() {
                 ))}
                 <button type="button" onClick={addHabilidad} className="bg-blue-500 text-white py-2 px-4 rounded-lg">
                   Añadir Habilidad
-                </button>
-              </section>
-
-              {/* Experiencia Laboral */}
-              <section className="mb-8">
-                <h2 className="text-2xl font-semibold text-gray-700 mb-4">Experiencia Laboral</h2>
-                {experiencia.map((exp, index) => (
-                  <div key={index} className="mb-4 border-b border-gray-300 pb-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <label className="block text-gray-600 mb-2">Puesto</label>
-                        <input
-                          type="text"
-                          value={exp.puesto}
-                          onChange={(e) => handleExperienciaChange(index, "puesto", e.target.value)}
-                          className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-gray-600 mb-2">Organización</label>
-                        <input
-                          type="text"
-                          value={exp.organizacion}
-                          onChange={(e) => handleExperienciaChange(index, "organizacion", e.target.value)}
-                          className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-gray-600 mb-2">Fecha de Inicio</label>
-                        <input
-                          type="date"
-                          value={exp.fechaInicio}
-                          onChange={(e) => handleExperienciaChange(index, "fechaInicio", e.target.value)}
-                          className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-gray-600 mb-2">Fecha de Fin</label>
-                        <input
-                          type="date"
-                          value={exp.hastaActualidad ? "" : exp.fechaFin}
-                          disabled={exp.hastaActualidad}
-                          onChange={(e) => handleExperienciaChange(index, "fechaFin", e.target.value)}
-                          className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                        <div className="mt-2">
-                          <label className="flex items-center">
-                            <input
-                              type="checkbox"
-                              checked={exp.hastaActualidad}
-                              onChange={() => toggleHastaActualidad(index)}
-                              className="mr-2"
-                            />
-                            Hasta la actualidad
-                          </label>
-                        </div>
-                      </div>
-                      <div className="col-span-1 md:col-span-2">
-                        <label className="block text-gray-600 mb-2">Descripción</label>
-                        <textarea
-                          value={exp.descripcion}
-                          onChange={(e) => handleExperienciaChange(index, "descripcion", e.target.value)}
-                          className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          rows="3"
-                        />
-                      </div>
-                    </div>
-                    <button type="button" onClick={() => removeExperiencia(index)} className="text-red-500 mt-2">
-                      Eliminar Experiencia
-                    </button>
-                  </div>
-                ))}
-                <button type="button" onClick={addExperiencia} className="bg-blue-500 text-white py-2 px-4 rounded-lg">
-                  Añadir Experiencia
                 </button>
               </section>
 
@@ -543,18 +533,18 @@ export default function Home() {
                         />
                       </div>
                       <div>
-                        <label className="block text-gray-600 mb-2">Fecha de Inicio</label>
+                        <label className="block text-gray-600 mb-2">Año de Inicio</label>
                         <input
-                          type="date"
+                          type="text"
                           value={edu.fechaInicio}
                           onChange={(e) => handleEducacionChange(index, "fechaInicio", e.target.value)}
                           className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                       </div>
                       <div>
-                        <label className="block text-gray-600 mb-2">Fecha de Fin</label>
+                        <label className="block text-gray-600 mb-2">Año de Fin</label>
                         <input
-                          type="date"
+                          type="text"
                           value={edu.hastaActualidad ? "" : edu.fechaFin}
                           disabled={edu.hastaActualidad}
                           onChange={(e) => handleEducacionChange(index, "fechaFin", e.target.value)}
@@ -592,6 +582,80 @@ export default function Home() {
                 </button>
               </section>
 
+
+              {/* Experiencia Laboral */}
+              <section className="mb-8">
+                <h2 className="text-2xl font-semibold text-gray-700 mb-4">Experiencia Laboral</h2>
+                {experiencia.map((exp, index) => (
+                  <div key={index} className="mb-4 border-b border-gray-300 pb-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-gray-600 mb-2">Puesto</label>
+                        <input
+                          type="text"
+                          value={exp.puesto}
+                          onChange={(e) => handleExperienciaChange(index, "puesto", e.target.value)}
+                          className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-gray-600 mb-2">Organización</label>
+                        <input
+                          type="text"
+                          value={exp.organizacion}
+                          onChange={(e) => handleExperienciaChange(index, "organizacion", e.target.value)}
+                          className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-gray-600 mb-2">Año de Inicio</label>
+                        <input
+                          type="text"
+                          value={exp.fechaInicio}
+                          onChange={(e) => handleExperienciaChange(index, "fechaInicio", e.target.value)}
+                          className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-gray-600 mb-2">Año de Fin</label>
+                        <input
+                          type="text"
+                          value={exp.hastaActualidad ? "" : exp.fechaFin}
+                          disabled={exp.hastaActualidad}
+                          onChange={(e) => handleExperienciaChange(index, "fechaFin", e.target.value)}
+                          className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                        <div className="mt-2">
+                          <label className="flex items-center">
+                            <input
+                              type="checkbox"
+                              checked={exp.hastaActualidad}
+                              onChange={() => toggleHastaActualidad(index)}
+                              className="mr-2"
+                            />
+                            Hasta la actualidad
+                          </label>
+                        </div>
+                      </div>
+                      <div className="col-span-1 md:col-span-2">
+                        <label className="block text-gray-600 mb-2">Descripción</label>
+                        <textarea
+                          value={exp.descripcion}
+                          onChange={(e) => handleExperienciaChange(index, "descripcion", e.target.value)}
+                          className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          rows="3"
+                        />
+                      </div>
+                    </div>
+                    <button type="button" onClick={() => removeExperiencia(index)} className="text-red-500 mt-2">
+                      Eliminar Experiencia
+                    </button>
+                  </div>
+                ))}
+                <button type="button" onClick={addExperiencia} className="bg-blue-500 text-white py-2 px-4 rounded-lg">
+                  Añadir Experiencia
+                </button>
+              </section>
 
             </form>
           </div>
