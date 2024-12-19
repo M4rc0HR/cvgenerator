@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { jsPDF } from "jspdf";
+import { estrellaRellenaBase64, estrellaVaciaBase64 } from './imagenesBase64';
 
 export default function Home() {
-
+  
   // Información personal
   const [personalInfo, setPersonalInfo] = useState({
     nombres: "",
@@ -34,16 +35,52 @@ export default function Home() {
   };
 
 
-  //Habilidades
-  const [habilidades, setHabilidades] = useState([""]);
 
-  const handleHabilidadChange = (index, value) => {
+
+
+
+
+
+  //Habilidades
+  const [habilidades, setHabilidades] = useState([
+    { nombre: "", nivel: 1 }
+  ]);
+
+  const handleHabilidadChange = (index, updatedHabilidad) => {
     const updatedHabilidades = [...habilidades];
-    updatedHabilidades[index] = value;
+    updatedHabilidades[index] = updatedHabilidad;
     setHabilidades(updatedHabilidades);
   };
-  const addHabilidad = () => setHabilidades([...habilidades, ""]);
-  const removeHabilidad = (index) => setHabilidades(habilidades.filter((_, i) => i !== index));
+
+  const addHabilidad = () => {
+    setHabilidades([...habilidades, { nombre: "", nivel: 1 }]);
+  };
+
+  const removeHabilidad = (index) => {
+    setHabilidades(habilidades.filter((_, i) => i !== index));
+  };
+
+
+  // Cursos
+  const [cursos, setCursos] = useState([
+    { nombre: "", organizacion: "", nivel: 1 }
+  ]);
+
+  const handleCursosChange = (index, updatedCurso) => {
+    const updatedCursos = [...cursos];
+    updatedCursos[index] = updatedCurso;
+    setCursos(updatedCursos);
+  };
+
+  const addCursos = () => {
+    setCursos([...cursos, { nombre: "", organizacion: "", nivel: 1 }]);
+  };
+
+  const removeCursos = (index) => {
+    setCursos(cursos.filter((_, i) => i !== index));
+  };
+
+
 
   // Experiencia
   const [experiencia, setExperiencia] = useState([
@@ -132,32 +169,34 @@ export default function Home() {
 
 
   const generarPDFDinamico = () => {
+
+
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
-  
+
     const marginLeft = 20;
     const marginRight = pageWidth / 2 - 10;
-  
+
     let yPositionLeft = 90;
     let yPositionRight = 75;
-  
+
     // Configuración de la franja horizontal (detrás del nombre)
     const horizontalStripeWidth = pageWidth;
     const horizontalStripeHeight = 60;
     const horizontalStripeColor = [20, 63, 114]; // Color azul oscuro (RGB)
-  
+
     doc.setFillColor(...horizontalStripeColor);
     doc.rect(0, 0, horizontalStripeWidth, horizontalStripeHeight, "F");
-  
+
     // Configuración de la franja vertical (columna izquierda)
     const verticalStripeWidth = 75;
     const verticalStripeHeight = pageHeight;
     const verticalStripeColor = [56, 109, 173]; // Color azul claro (RGB)
-  
+
     doc.setFillColor(...verticalStripeColor);
     doc.rect(10, 0, verticalStripeWidth, verticalStripeHeight, "F");
-  
+
     // Nombre y Apellidos (centrado)
 
     doc.setFont(undefined, 'bold');
@@ -165,33 +204,33 @@ export default function Home() {
     doc.setTextColor(255, 255, 255);
     doc.text(personalInfo.nombres.toLocaleUpperCase(), (pageWidth / 2) + 42, 23, { align: "center" });
     doc.text(personalInfo.apellidos.toLocaleUpperCase(), (pageWidth / 2) + 42, 38, { align: "center" });
-  
+
     // Cargo actual (debajo del nombre)
     doc.setFontSize(20);
     doc.setFont(undefined, 'normal')
     doc.text(`${personalInfo.cargo.toLocaleUpperCase()}`, (pageWidth / 2) + 42, 50, { align: "center" });
-  
+
     // Imagen de perfil (si existe)
     if (personalInfo.imagen) {
       doc.addImage(personalInfo.imagen, "JPEG", 20, 20, 55, 55);
     }
 
-  
+
     doc.setFontSize(14);
     doc.setTextColor(255, 255, 255);
-  
+
     const addTextWithSpacing = (text, yPos, margin) => {
       doc.text(text, margin, yPos);
-      return yPos + 8 ; // Espaciado consistente
+      return yPos + 8; // Espaciado consistente
     };
-  
+
 
     // Información de contacto (Columna Izquierda)
 
     doc.setFontSize(24);
     doc.setFont(undefined, 'bold')
     doc.text("Contacto", marginLeft, yPositionLeft);
-    yPositionLeft += 10;
+    yPositionLeft += 6;
 
 
     doc.setFontSize(11);
@@ -204,47 +243,62 @@ export default function Home() {
     yPositionLeft -= 2;
 
 
-    
-     // Linea divisora
-     
-     doc.setDrawColor(255, 255, 255);
-     doc.setLineWidth(0.5);
 
-     doc.line(marginLeft - 5, yPositionLeft, pageWidth - 130, yPositionLeft);
-     yPositionLeft += 12;
+    // Linea divisora
+
+    doc.setDrawColor(255, 255, 255);
+    doc.setLineWidth(0.5);
+
+    doc.line(marginLeft - 5, yPositionLeft, pageWidth - 130, yPositionLeft);
+    yPositionLeft += 12;
+
+
 
     // Habilidades (Columna Izquierda)
-
     doc.setFontSize(24);
-    doc.setFont(undefined, 'bold')
+    doc.setFont(undefined, "bold");
     doc.text("Habilidades", marginLeft, yPositionLeft);
-    yPositionLeft += 10;
+    yPositionLeft += 8;
 
     doc.setFontSize(11);
-    doc.setFont(undefined, 'normal');
+    doc.setFont(undefined, "normal");
 
     habilidades.forEach((habilidad) => {
-      yPositionLeft = addTextWithSpacing(`• ${habilidad}`, yPositionLeft - 2, marginLeft);
+      // Agrega el texto de la habilidad
+      const habilidadTexto = `• ${habilidad.nombre}`;
+      yPositionLeft = addTextWithSpacing(habilidadTexto, yPositionLeft - 2, marginLeft);
+
+      // Calcula la posición horizontal de las estrellas según el ancho del texto de la habilidad
+      const textWidth = doc.getTextWidth(habilidadTexto);
+      const xPosition = marginLeft + 5; // Posición a la derecha del texto (ajustable)
+
+      // Agrega las estrellas debajo del texto de la habilidad
+      for (let i = 1; i <= 5; i++) {
+        const estrellaRuta = i <= habilidad.nivel ? estrellaRellenaBase64 : estrellaVaciaBase64;
+        doc.addImage(estrellaRuta, "PNG", xPosition + (i - 1) * 8, yPositionLeft - 6, 4, 4); // Ajusta la posición de cada estrella
+      }
+
+      // Espaciado adicional para la siguiente habilidad
+      yPositionLeft += 4; // Espaciado entre habilidades (incluyendo espacio para las estrellas)
     });
-  
+
+
+
+
     yPositionLeft -= 2;
+    // Linea divisora
+
+    doc.setDrawColor(255, 255, 255);
+    doc.setLineWidth(0.5);
+
+    doc.line(marginLeft - 5, yPositionLeft, pageWidth - 130, yPositionLeft);
+    yPositionLeft += 12;
+
     // Educación (Columna Izquierda)
-    
-    
-       
-     // Linea divisora
-     
-     doc.setDrawColor(255, 255, 255);
-     doc.setLineWidth(0.5);
-
-     doc.line(marginLeft - 5, yPositionLeft, pageWidth - 130, yPositionLeft);
-     yPositionLeft += 12;
-
-
     doc.setFontSize(24);
     doc.setFont(undefined, 'bold')
     doc.text("Educación", marginLeft, yPositionLeft);
-    yPositionLeft += 10;
+    yPositionLeft += 8;
 
     doc.setFontSize(11);
     doc.setFont(undefined, 'normal');
@@ -252,23 +306,74 @@ export default function Home() {
       doc.setFont(undefined, 'bold');
 
       const puestoLines = doc.splitTextToSize(`• ${edu.carrera}`, pageWidth / 2 - 55);
-      doc.text(puestoLines, marginLeft-2 , yPositionLeft, { maxWidth: pageWidth / 2 - 55, align: 'justify' });
+      doc.text(puestoLines, marginLeft, yPositionLeft, { maxWidth: pageWidth / 2 - 55, align: 'justify' });
       yPositionLeft += (puestoLines.length * 5) + 1;
-    
+
       doc.setFont(undefined, 'normal');
       const organizacionLines = doc.splitTextToSize(`${edu.institucion}`, pageWidth / 2 - 55);
-      doc.text(organizacionLines, marginLeft - 2, yPositionLeft - 1, { maxWidth: pageWidth / 2 - 55, align: 'justify' });
+      doc.text(organizacionLines, marginLeft + 2, yPositionLeft - 1, { maxWidth: pageWidth / 2 - 55, align: 'justify' });
       yPositionLeft += (organizacionLines.length * 5) + 1;
 
-      const fechasLine = `${edu.fechaInicio} - ${edu.fechaFin}`;
+      const fechasLine = `(${edu.fechaInicio} - ${edu.fechaFin})`;
       const fechasLines = doc.splitTextToSize(fechasLine, pageWidth / 2 - 55);
-      doc.text(fechasLines, marginLeft - 2, yPositionLeft - 3, { maxWidth: pageWidth / 2 - 55, align: 'justify' });
+      doc.text(fechasLines, marginLeft + 2, yPositionLeft - 3, { maxWidth: pageWidth / 2 - 55, align: 'justify' });
       yPositionLeft += 5;
-    
+
       const descripcionLines = doc.splitTextToSize(edu.descripcion, pageWidth / 2 - 55);
-      doc.text(descripcionLines, marginLeft - 2, yPositionLeft - 3, { maxWidth: pageWidth / 2 - 55, align: 'justify' });
+      doc.text(descripcionLines, marginLeft + 2, yPositionLeft - 3, { maxWidth: pageWidth / 2 - 55, align: 'justify' });
     });
-    
+
+
+
+    // Linea divisora
+
+    doc.setDrawColor(255, 255, 255);
+    doc.setLineWidth(0.5);
+
+    doc.line(marginLeft - 5, yPositionLeft, pageWidth - 130, yPositionLeft);
+    yPositionLeft += 12;
+
+
+
+    // Cursos (Columna Izquierda)
+    doc.setFontSize(24);
+    doc.setFont(undefined, "bold");
+    doc.text("Cursos", marginLeft, yPositionLeft);
+    yPositionLeft += 8;
+
+    doc.setFontSize(11);
+    doc.setFont(undefined, "normal");
+
+    cursos.forEach((curso) => {
+      // Agrega el texto de la habilidad
+      doc.setFont(undefined, 'bold');
+      const cursoTexto = `• ${curso.nombre}`;
+      yPositionLeft = addTextWithSpacing(cursoTexto, yPositionLeft - 2, marginLeft);
+
+      doc.setFont(undefined, 'normal');
+      const organizacionLines = doc.splitTextToSize(`${curso.organizacion}`, pageWidth / 2 - 55);
+      doc.text(organizacionLines, marginLeft + 2, yPositionLeft - 3, { maxWidth: pageWidth / 2 - 55, align: 'justify' });
+      yPositionLeft += (organizacionLines.length * 5) + 1;
+
+
+      // Calcula la posición horizontal de las estrellas según el ancho del texto de la habilidad
+      const textWidth = doc.getTextWidth(cursoTexto);
+      const xPosition = marginLeft + 5; // Posición a la derecha del texto (ajustable)
+
+
+
+      // Agrega las estrellas debajo del texto de la habilidad
+      for (let i = 1; i <= 5; i++) {
+        const estrellaRuta = i <= curso.nivel ? estrellaRellenaBase64 : estrellaVaciaBase64;
+        doc.addImage(estrellaRuta, "PNG", xPosition + (i - 1) * 8, yPositionLeft - 6, 4, 4); // Ajusta la posición de cada estrella
+      }
+
+      // Espaciado adicional para la siguiente habilidad
+      yPositionLeft += 4; // Espaciado entre habilidades (incluyendo espacio para las estrellas)
+    });
+
+
+
 
 
 
@@ -278,18 +383,18 @@ export default function Home() {
     doc.setFontSize(24);
     doc.setFont(undefined, 'bold')
     doc.text("Acerca de mí", marginRight, yPositionRight);
-    yPositionRight += 10;
+    yPositionRight += 8;
 
     doc.setFontSize(11);
 
     doc.setFont(undefined, 'normal')
     const acercaDeMiLines = doc.splitTextToSize(personalInfo.acercaDeMi, pageWidth / 2 - 2);
-    doc.text(acercaDeMiLines, marginRight, yPositionRight, { maxWidth: pageWidth / 2 - 2 , align: "justify" });
+    doc.text(acercaDeMiLines, marginRight, yPositionRight, { maxWidth: pageWidth / 2 - 2, align: "justify" });
     yPositionRight += (acercaDeMiLines.length * 5) + 1;
 
 
-     // Linea divisora
-     
+    // Linea divisora
+
     doc.setDrawColor(20, 63, 114);
     doc.setLineWidth(0.5);
     doc.line(marginRight, yPositionRight, pageWidth - 10, yPositionRight);
@@ -301,7 +406,7 @@ export default function Home() {
     doc.setFontSize(24);
     doc.setFont(undefined, 'bold')
     doc.text("Experiencia Laboral", marginRight, yPositionRight);
-    yPositionRight += 10;
+    yPositionRight += 8;
 
 
     doc.setFontSize(11);
@@ -310,38 +415,38 @@ export default function Home() {
       doc.setFont(undefined, 'bold');
 
       const puestoLines = doc.splitTextToSize(`• ${exp.puesto}`, pageWidth / 2 - 4);
-      doc.text(puestoLines, marginRight + 2, yPositionRight, { maxWidth: pageWidth / 2 - 4, align: 'justify' });
+      doc.text(puestoLines, marginRight, yPositionRight, { maxWidth: pageWidth / 2 - 4, align: 'justify' });
       yPositionRight += puestoLines.length * 5 - 1;
-    
+
       doc.setFont(undefined, 'normal');
       const organizacionLines = doc.splitTextToSize(`${exp.organizacion}`, pageWidth / 2 - 4);
       doc.text(organizacionLines, marginRight + 2, yPositionRight, { maxWidth: pageWidth / 2 - 4, align: 'justify' });
       yPositionRight += organizacionLines.length * 5 - 1;
-    
+
       const fechasLine = `(${exp.fechaInicio} - ${exp.fechaFin})`;
       const fechasLines = doc.splitTextToSize(fechasLine, pageWidth / 2 - 4);
       doc.text(fechasLines, marginRight + 2, yPositionRight, { maxWidth: pageWidth / 2 - 4, align: 'justify' });
       yPositionRight += fechasLines.length * 5 - 1;
-    
+
       const descripcionLines = doc.splitTextToSize(exp.descripcion, pageWidth / 2 - 4);
-      doc.text(descripcionLines, marginRight + 3, yPositionRight, { maxWidth: pageWidth / 2 - 4, align: 'justify' });
+      doc.text(descripcionLines, marginRight + 2, yPositionRight, { maxWidth: pageWidth / 2 - 4, align: 'justify' });
       yPositionRight += descripcionLines.length * 5 - 1;
 
     });
-    
-    
-  
+
+
+
     // Generar vista previa del PDF
     const pdfBlob = doc.output("blob");
     const pdfURL = URL.createObjectURL(pdfBlob);
-  
+
     document.getElementById("pdfPreview").src = pdfURL;
   };
-  
 
 
 
-  
+
+
 
   return (
     <div className="min-h-screen bg-gray-100 py-10">
@@ -481,17 +586,32 @@ export default function Home() {
                 </div>
               </section>
 
-
               {/* Habilidades */}
               <section className="mb-8">
                 <h2 className="text-2xl font-semibold text-gray-700 mb-4">Habilidades</h2>
                 {habilidades.map((habilidad, index) => (
                   <div key={index} className="flex items-center gap-4 mb-2">
+                    {/* Campo para el nombre de la habilidad */}
                     <input
                       type="text"
-                      value={habilidad}
-                      onChange={(e) => handleHabilidadChange(index, e.target.value)}
+                      value={habilidad.nombre}
+                      onChange={(e) =>
+                        handleHabilidadChange(index, { ...habilidad, nombre: e.target.value })
+                      }
+                      placeholder="Nombre de la habilidad"
                       className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    {/* Selección de nivel de habilidad */}
+                    <input
+                      type="number"
+                      min="1"
+                      max="5"
+                      value={habilidad.nivel}
+                      onChange={(e) =>
+                        handleHabilidadChange(index, { ...habilidad, nivel: parseInt(e.target.value) })
+                      }
+                      placeholder="Nivel (1-5)"
+                      className="w-20 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                     <button
                       type="button"
@@ -502,8 +622,69 @@ export default function Home() {
                     </button>
                   </div>
                 ))}
-                <button type="button" onClick={addHabilidad} className="bg-blue-500 text-white py-2 px-4 rounded-lg">
+                <button
+                  type="button"
+                  onClick={addHabilidad}
+                  className="bg-blue-500 text-white py-2 px-4 rounded-lg"
+                >
                   Añadir Habilidad
+                </button>
+              </section>
+
+
+
+              {/* Cursos */}
+              <section className="mb-8">
+                <h2 className="text-2xl font-semibold text-gray-700 mb-4">Cursos</h2>
+                {cursos.map((curso, index) => (
+                  <div key={index} className="flex items-center gap-4 mb-2">
+                    {/* Campo para el nombre del curso */}
+                    <input
+                      type="text"
+                      value={curso.nombre}
+                      onChange={(e) =>
+                        handleCursosChange(index, { ...curso, nombre: e.target.value })
+                      }
+                      placeholder="Nombre del curso"
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    {/* Campo para la organización */}
+                    <input
+                      type="text"
+                      value={curso.organizacion}
+                      onChange={(e) =>
+                        handleCursosChange(index, { ...curso, organizacion: e.target.value })
+                      }
+                      placeholder="Organización"
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    {/* Selección del nivel del curso */}
+                    <input
+                      type="number"
+                      min="1"
+                      max="5"
+                      value={curso.nivel}
+                      onChange={(e) =>
+                        handleCursosChange(index, { ...curso, nivel: Number(e.target.value) })
+                      }
+                      placeholder="Nivel (1-5)"
+                      className="w-20 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeCursos(index)}
+                      className="text-red-500"
+                    >
+                      Eliminar
+                    </button>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={addCursos}
+                  className="bg-blue-500 text-white py-2 px-4 rounded-lg"
+                >
+                  Añadir Curso
                 </button>
               </section>
 

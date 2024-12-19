@@ -1,7 +1,6 @@
 import localFont from "next/font/local";
 import "./globals.css";
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
+import Head from "next/head";  // Importar el componente Head de Next.js
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -22,9 +21,14 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <Head>
+        {/* Cargar el script de manera asíncrona */}
+        <script 
+          src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js" 
+          async 
+        ></script>
+      </Head>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         {children}
       </body>
     </html>
