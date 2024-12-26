@@ -22,7 +22,6 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <Head>
-        {/* Cargar el script de manera asíncrona */}
         <script 
           src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js" 
           async 

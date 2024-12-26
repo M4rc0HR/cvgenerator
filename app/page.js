@@ -2,10 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { jsPDF } from "jspdf";
-import { estrellaRellenaBase64, estrellaVaciaBase64 } from './imagenesBase64';
+import { estrellaRellenaBase64, estrellaVaciaBase64, location, phone, mail, date} from './imagenesBase64';
+import '../app/fonts/Roboto-Regular-normal';
+import '../app/fonts/Roboto-Bold.js';
+
+
 
 export default function Home() {
-  
+
   // Información personal
   const [personalInfo, setPersonalInfo] = useState({
     nombres: "",
@@ -13,6 +17,8 @@ export default function Home() {
     cargo: "",
     email: "",
     telefono: "",
+    fechNacimiento: "",
+    direccion: "",
     paginaWeb: "",
     acercaDeMi: "",
     imagen: null,
@@ -35,16 +41,8 @@ export default function Home() {
   };
 
 
-
-
-
-
-
-
-  //Habilidades
-  const [habilidades, setHabilidades] = useState([
-    { nombre: "", nivel: 1 }
-  ]);
+  // Habilidades
+  const [habilidades, setHabilidades] = useState([{ nombre: "" }]);
 
   const handleHabilidadChange = (index, updatedHabilidad) => {
     const updatedHabilidades = [...habilidades];
@@ -53,7 +51,7 @@ export default function Home() {
   };
 
   const addHabilidad = () => {
-    setHabilidades([...habilidades, { nombre: "", nivel: 1 }]);
+    setHabilidades([...habilidades, { nombre: "" }]);
   };
 
   const removeHabilidad = (index) => {
@@ -61,24 +59,28 @@ export default function Home() {
   };
 
 
-  // Cursos
+
+  //Cursos
   const [cursos, setCursos] = useState([
     { nombre: "", organizacion: "", nivel: 1 }
   ]);
 
-  const handleCursosChange = (index, updatedCurso) => {
+  const handleCursoChange = (index, updatedCurso) => {
     const updatedCursos = [...cursos];
     updatedCursos[index] = updatedCurso;
     setCursos(updatedCursos);
   };
 
-  const addCursos = () => {
+  const addCurso = () => {
     setCursos([...cursos, { nombre: "", organizacion: "", nivel: 1 }]);
   };
 
-  const removeCursos = (index) => {
+  const removeCurso = (index) => {
     setCursos(cursos.filter((_, i) => i !== index));
   };
+
+
+
 
 
 
@@ -159,16 +161,14 @@ export default function Home() {
   // Actualizar PDF dinámicamente cuando cambia la información
   useEffect(() => {
     generarPDFDinamico();
-  }, [personalInfo, habilidades, experiencia, educacion]);
-
-
-
-
-
+  }, [personalInfo, habilidades, cursos, experiencia, educacion]);
 
 
 
   const generarPDFDinamico = () => {
+
+
+
 
 
     const doc = new jsPDF();
@@ -197,9 +197,17 @@ export default function Home() {
     doc.setFillColor(...verticalStripeColor);
     doc.rect(10, 0, verticalStripeWidth, verticalStripeHeight, "F");
 
+
+
+
+
+
+
+    
+
     // Nombre y Apellidos (centrado)
 
-    doc.setFont(undefined, 'bold');
+    doc.setFont('Roboto-Bold', 'bold');
     doc.setFontSize(32);
     doc.setTextColor(255, 255, 255);
     doc.text(personalInfo.nombres.toLocaleUpperCase(), (pageWidth / 2) + 42, 23, { align: "center" });
@@ -207,13 +215,15 @@ export default function Home() {
 
     // Cargo actual (debajo del nombre)
     doc.setFontSize(20);
-    doc.setFont(undefined, 'normal')
+    doc.setFont('Roboto-Regular', 'normal');
     doc.text(`${personalInfo.cargo.toLocaleUpperCase()}`, (pageWidth / 2) + 42, 50, { align: "center" });
 
     // Imagen de perfil (si existe)
     if (personalInfo.imagen) {
       doc.addImage(personalInfo.imagen, "JPEG", 20, 20, 55, 55);
     }
+
+    doc.addImage(location, "SVG", 20, 20, 55, 55);
 
 
     doc.setFontSize(14);
@@ -228,21 +238,23 @@ export default function Home() {
     // Información de contacto (Columna Izquierda)
 
     doc.setFontSize(24);
-    doc.setFont(undefined, 'bold')
+    doc.setFont('Roboto-Bold', 'bold');
     doc.text("Contacto", marginLeft, yPositionLeft);
     yPositionLeft += 6;
 
 
+
+
     doc.setFontSize(11);
-    doc.setFont(undefined, 'normal');
+    doc.setFont('Roboto-Regular', 'normal');
     yPositionLeft = addTextWithSpacing(`${personalInfo.telefono}`, yPositionLeft, marginLeft);
     yPositionLeft -= 2;
     yPositionLeft = addTextWithSpacing(`${personalInfo.email}`, yPositionLeft, marginLeft);
     yPositionLeft -= 2;
-    yPositionLeft = addTextWithSpacing(`${personalInfo.paginaWeb}`, yPositionLeft, marginLeft);
+    yPositionLeft = addTextWithSpacing(`${personalInfo.direccion}`, yPositionLeft, marginLeft);
     yPositionLeft -= 2;
-
-
+    yPositionLeft = addTextWithSpacing(`${personalInfo.fechNacimiento}`, yPositionLeft, marginLeft);
+    yPositionLeft -= 2;
 
     // Linea divisora
 
@@ -256,32 +268,18 @@ export default function Home() {
 
     // Habilidades (Columna Izquierda)
     doc.setFontSize(24);
-    doc.setFont(undefined, "bold");
+    doc.setFont('Roboto-Bold', 'bold');
     doc.text("Habilidades", marginLeft, yPositionLeft);
     yPositionLeft += 8;
 
     doc.setFontSize(11);
-    doc.setFont(undefined, "normal");
+    doc.setFont('Roboto-Regular', 'normal');
 
     habilidades.forEach((habilidad) => {
       // Agrega el texto de la habilidad
       const habilidadTexto = `• ${habilidad.nombre}`;
-      yPositionLeft = addTextWithSpacing(habilidadTexto, yPositionLeft - 2, marginLeft);
-
-      // Calcula la posición horizontal de las estrellas según el ancho del texto de la habilidad
-      const textWidth = doc.getTextWidth(habilidadTexto);
-      const xPosition = marginLeft + 5; // Posición a la derecha del texto (ajustable)
-
-      // Agrega las estrellas debajo del texto de la habilidad
-      for (let i = 1; i <= 5; i++) {
-        const estrellaRuta = i <= habilidad.nivel ? estrellaRellenaBase64 : estrellaVaciaBase64;
-        doc.addImage(estrellaRuta, "PNG", xPosition + (i - 1) * 8, yPositionLeft - 6, 4, 4); // Ajusta la posición de cada estrella
-      }
-
-      // Espaciado adicional para la siguiente habilidad
-      yPositionLeft += 4; // Espaciado entre habilidades (incluyendo espacio para las estrellas)
+      yPositionLeft = addTextWithSpacing(habilidadTexto, yPositionLeft - 1, marginLeft);
     });
-
 
 
 
@@ -296,20 +294,20 @@ export default function Home() {
 
     // Educación (Columna Izquierda)
     doc.setFontSize(24);
-    doc.setFont(undefined, 'bold')
+    doc.setFont('Roboto-Bold', 'bold');
     doc.text("Educación", marginLeft, yPositionLeft);
     yPositionLeft += 8;
 
     doc.setFontSize(11);
-    doc.setFont(undefined, 'normal');
+    doc.setFont('Roboto-Regular', 'normal');
     educacion.forEach((edu) => {
-      doc.setFont(undefined, 'bold');
+      doc.setFont('Roboto-Bold', 'bold');
 
       const puestoLines = doc.splitTextToSize(`• ${edu.carrera}`, pageWidth / 2 - 55);
       doc.text(puestoLines, marginLeft, yPositionLeft, { maxWidth: pageWidth / 2 - 55, align: 'justify' });
       yPositionLeft += (puestoLines.length * 5) + 1;
 
-      doc.setFont(undefined, 'normal');
+      doc.setFont('Roboto-Regular', 'normal');
       const organizacionLines = doc.splitTextToSize(`${edu.institucion}`, pageWidth / 2 - 55);
       doc.text(organizacionLines, marginLeft + 2, yPositionLeft - 1, { maxWidth: pageWidth / 2 - 55, align: 'justify' });
       yPositionLeft += (organizacionLines.length * 5) + 1;
@@ -337,20 +335,20 @@ export default function Home() {
 
     // Cursos (Columna Izquierda)
     doc.setFontSize(24);
-    doc.setFont(undefined, "bold");
+    doc.setFont('Roboto-Bold', 'bold');
     doc.text("Cursos", marginLeft, yPositionLeft);
     yPositionLeft += 8;
 
     doc.setFontSize(11);
-    doc.setFont(undefined, "normal");
+    doc.setFont('Roboto-Regular', 'normal');
 
     cursos.forEach((curso) => {
       // Agrega el texto de la habilidad
-      doc.setFont(undefined, 'bold');
+      doc.setFont('Roboto-Bold', 'bold');
       const cursoTexto = `• ${curso.nombre}`;
       yPositionLeft = addTextWithSpacing(cursoTexto, yPositionLeft - 2, marginLeft);
 
-      doc.setFont(undefined, 'normal');
+      doc.setFont('Roboto-Regular', 'normal');
       const organizacionLines = doc.splitTextToSize(`${curso.organizacion}`, pageWidth / 2 - 55);
       doc.text(organizacionLines, marginLeft + 2, yPositionLeft - 3, { maxWidth: pageWidth / 2 - 55, align: 'justify' });
       yPositionLeft += (organizacionLines.length * 5) + 1;
@@ -359,7 +357,6 @@ export default function Home() {
       // Calcula la posición horizontal de las estrellas según el ancho del texto de la habilidad
       const textWidth = doc.getTextWidth(cursoTexto);
       const xPosition = marginLeft + 5; // Posición a la derecha del texto (ajustable)
-
 
 
       // Agrega las estrellas debajo del texto de la habilidad
@@ -374,20 +371,17 @@ export default function Home() {
 
 
 
-
-
-
     // Acerca de mí (Columna Derecha)
 
     doc.setTextColor(20, 63, 114);
     doc.setFontSize(24);
-    doc.setFont(undefined, 'bold')
+    doc.setFont('Roboto-Bold', 'bold');
     doc.text("Acerca de mí", marginRight, yPositionRight);
     yPositionRight += 8;
 
     doc.setFontSize(11);
 
-    doc.setFont(undefined, 'normal')
+    doc.setFont('Roboto-Regular', 'normal');
     const acercaDeMiLines = doc.splitTextToSize(personalInfo.acercaDeMi, pageWidth / 2 - 2);
     doc.text(acercaDeMiLines, marginRight, yPositionRight, { maxWidth: pageWidth / 2 - 2, align: "justify" });
     yPositionRight += (acercaDeMiLines.length * 5) + 1;
@@ -404,21 +398,21 @@ export default function Home() {
 
     doc.setTextColor(20, 63, 114);
     doc.setFontSize(24);
-    doc.setFont(undefined, 'bold')
+    doc.setFont('Roboto-Bold', 'bold');
     doc.text("Experiencia Laboral", marginRight, yPositionRight);
     yPositionRight += 8;
 
 
     doc.setFontSize(11);
-    doc.setFont(undefined, 'normal');
+    doc.setFont('Roboto-Regular', 'normal');
     experiencia.forEach((exp) => {
-      doc.setFont(undefined, 'bold');
+      doc.setFont('Roboto-Bold', 'bold');
 
       const puestoLines = doc.splitTextToSize(`• ${exp.puesto}`, pageWidth / 2 - 4);
       doc.text(puestoLines, marginRight, yPositionRight, { maxWidth: pageWidth / 2 - 4, align: 'justify' });
       yPositionRight += puestoLines.length * 5 - 1;
 
-      doc.setFont(undefined, 'normal');
+      doc.setFont('Roboto-Regular', 'normal');
       const organizacionLines = doc.splitTextToSize(`${exp.organizacion}`, pageWidth / 2 - 4);
       doc.text(organizacionLines, marginRight + 2, yPositionRight, { maxWidth: pageWidth / 2 - 4, align: 'justify' });
       yPositionRight += organizacionLines.length * 5 - 1;
@@ -496,6 +490,30 @@ export default function Home() {
                       type="text"
                       name="cargo"
                       value={personalInfo.cargo}
+                      onChange={handlePersonalInfoChange}
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+
+                  {/* Campo Fecha de Nacimiento */}
+                  <div className="col-span-1">
+                    <label className="block text-gray-600 mb-2">Fecha de Nacimiento</label>
+                    <input
+                      type="text"
+                      name="fechNacimiento"
+                      value={personalInfo.fechNacimiento}
+                      onChange={handlePersonalInfoChange}
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+
+                  {/* Campo direccion */}
+                  <div className="col-span-1">
+                    <label className="block text-gray-600 mb-2">Dirección</label>
+                    <input
+                      type="text"
+                      name="direccion"
+                      value={personalInfo.direccion}
                       onChange={handlePersonalInfoChange}
                       className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
@@ -601,18 +619,6 @@ export default function Home() {
                       placeholder="Nombre de la habilidad"
                       className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
-                    {/* Selección de nivel de habilidad */}
-                    <input
-                      type="number"
-                      min="1"
-                      max="5"
-                      value={habilidad.nivel}
-                      onChange={(e) =>
-                        handleHabilidadChange(index, { ...habilidad, nivel: parseInt(e.target.value) })
-                      }
-                      placeholder="Nivel (1-5)"
-                      className="w-20 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
                     <button
                       type="button"
                       onClick={() => removeHabilidad(index)}
@@ -633,6 +639,8 @@ export default function Home() {
 
 
 
+
+
               {/* Cursos */}
               <section className="mb-8">
                 <h2 className="text-2xl font-semibold text-gray-700 mb-4">Cursos</h2>
@@ -643,7 +651,7 @@ export default function Home() {
                       type="text"
                       value={curso.nombre}
                       onChange={(e) =>
-                        handleCursosChange(index, { ...curso, nombre: e.target.value })
+                        handleCursoChange(index, { ...curso, nombre: e.target.value })
                       }
                       placeholder="Nombre del curso"
                       className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -653,26 +661,27 @@ export default function Home() {
                       type="text"
                       value={curso.organizacion}
                       onChange={(e) =>
-                        handleCursosChange(index, { ...curso, organizacion: e.target.value })
+                        handleCursoChange(index, { ...curso, organizacion: e.target.value })
                       }
                       placeholder="Organización"
                       className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
-                    {/* Selección del nivel del curso */}
+
+                    {/* Selección de nivel de curso */}
                     <input
                       type="number"
                       min="1"
                       max="5"
                       value={curso.nivel}
                       onChange={(e) =>
-                        handleCursosChange(index, { ...curso, nivel: Number(e.target.value) })
+                        handleCursoChange(index, { ...curso, nivel: parseInt(e.target.value) })
                       }
                       placeholder="Nivel (1-5)"
                       className="w-20 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                     <button
                       type="button"
-                      onClick={() => removeCursos(index)}
+                      onClick={() => removeCurso(index)}
                       className="text-red-500"
                     >
                       Eliminar
@@ -681,12 +690,13 @@ export default function Home() {
                 ))}
                 <button
                   type="button"
-                  onClick={addCursos}
+                  onClick={addCurso}
                   className="bg-blue-500 text-white py-2 px-4 rounded-lg"
                 >
                   Añadir Curso
                 </button>
               </section>
+
 
 
               {/* Educacion */}
