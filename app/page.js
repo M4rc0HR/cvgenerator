@@ -2,11 +2,37 @@
 
 import { useState, useEffect } from "react";
 import { jsPDF } from "jspdf";
-import { estrellaRellenaBase64, estrellaVaciaBase64, location, phone, mail, date} from './imagenesBase64';
+import { estrellaRellenaBase64, estrellaVaciaBase64, location, phone, mail, date } from './imagenesBase64';
 import '../app/fonts/Roboto-Regular-normal';
 import '../app/fonts/Roboto-Bold.js';
 
 
+function changeImageColor(base64Image, color) {
+  return new Promise((resolve) => {
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    const img = new Image();
+
+    img.src = base64Image;
+    img.onload = () => {
+      canvas.width = img.width;
+      canvas.height = img.height;
+
+      // Dibuja la imagen
+      ctx.drawImage(img, 0, 0);
+
+      // Cambia el modo de composición
+      ctx.globalCompositeOperation = "source-in";
+
+      // Aplica el nuevo color
+      ctx.fillStyle = color;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Retorna la nueva imagen en Base64
+      resolve(canvas.toDataURL());
+    };
+  });
+}
 
 export default function Home() {
 
@@ -172,6 +198,8 @@ export default function Home() {
 
 
     const doc = new jsPDF();
+
+
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
 
@@ -184,7 +212,7 @@ export default function Home() {
     // Configuración de la franja horizontal (detrás del nombre)
     const horizontalStripeWidth = pageWidth;
     const horizontalStripeHeight = 60;
-    const horizontalStripeColor = [20, 63, 114]; // Color azul oscuro (RGB)
+    const horizontalStripeColor = [111, 111, 111]; // Color azul oscuro (RGB)
 
     doc.setFillColor(...horizontalStripeColor);
     doc.rect(0, 0, horizontalStripeWidth, horizontalStripeHeight, "F");
@@ -192,18 +220,13 @@ export default function Home() {
     // Configuración de la franja vertical (columna izquierda)
     const verticalStripeWidth = 75;
     const verticalStripeHeight = pageHeight;
-    const verticalStripeColor = [56, 109, 173]; // Color azul claro (RGB)
+    const verticalStripeColor = [227, 227, 227];
 
     doc.setFillColor(...verticalStripeColor);
     doc.rect(10, 0, verticalStripeWidth, verticalStripeHeight, "F");
 
 
 
-
-
-
-
-    
 
     // Nombre y Apellidos (centrado)
 
@@ -223,11 +246,10 @@ export default function Home() {
       doc.addImage(personalInfo.imagen, "JPEG", 20, 20, 55, 55);
     }
 
-    doc.addImage(location, "SVG", 20, 20, 55, 55);
 
 
     doc.setFontSize(14);
-    doc.setTextColor(255, 255, 255);
+    doc.setTextColor(82, 82, 82);
 
     const addTextWithSpacing = (text, yPos, margin) => {
       doc.text(text, margin, yPos);
@@ -245,20 +267,39 @@ export default function Home() {
 
 
 
+
     doc.setFontSize(11);
     doc.setFont('Roboto-Regular', 'normal');
-    yPositionLeft = addTextWithSpacing(`${personalInfo.telefono}`, yPositionLeft, marginLeft);
+
+    const iconSize = 4; // Tamaño del ícono (ancho y alto)
+    const iconMarginRight = 2; // Espacio entre el ícono y el texto
+    const textXPosition = marginLeft + iconSize + iconMarginRight; // Posición X para el texto
+
+    // Teléfono
+    doc.addImage(phone, "PNG", marginLeft, yPositionLeft - iconSize + 1 / 2, iconSize, iconSize);
+    yPositionLeft = addTextWithSpacing(`${personalInfo.telefono}`, yPositionLeft, textXPosition);
     yPositionLeft -= 2;
-    yPositionLeft = addTextWithSpacing(`${personalInfo.email}`, yPositionLeft, marginLeft);
+
+    // Email
+    doc.addImage(mail, "PNG", marginLeft, yPositionLeft - iconSize + 1 / 2, iconSize, iconSize);
+    yPositionLeft = addTextWithSpacing(`${personalInfo.email}`, yPositionLeft, textXPosition);
     yPositionLeft -= 2;
-    yPositionLeft = addTextWithSpacing(`${personalInfo.direccion}`, yPositionLeft, marginLeft);
+
+    // Dirección
+    doc.addImage(location, "PNG", marginLeft, yPositionLeft - iconSize + 1 / 2, iconSize, iconSize);
+    yPositionLeft = addTextWithSpacing(`${personalInfo.direccion}`, yPositionLeft, textXPosition);
     yPositionLeft -= 2;
-    yPositionLeft = addTextWithSpacing(`${personalInfo.fechNacimiento}`, yPositionLeft, marginLeft);
+
+    // Fecha de nacimiento
+    doc.addImage(date, "PNG", marginLeft, yPositionLeft - iconSize + 1 / 2, iconSize, iconSize);
+    yPositionLeft = addTextWithSpacing(`${personalInfo.fechNacimiento}`, yPositionLeft, textXPosition);
     yPositionLeft -= 2;
+
+
 
     // Linea divisora
 
-    doc.setDrawColor(255, 255, 255);
+    doc.setDrawColor(82, 82, 82);
     doc.setLineWidth(0.5);
 
     doc.line(marginLeft - 5, yPositionLeft, pageWidth - 130, yPositionLeft);
@@ -286,7 +327,7 @@ export default function Home() {
     yPositionLeft -= 2;
     // Linea divisora
 
-    doc.setDrawColor(255, 255, 255);
+    doc.setDrawColor(82, 82, 82);
     doc.setLineWidth(0.5);
 
     doc.line(marginLeft - 5, yPositionLeft, pageWidth - 130, yPositionLeft);
@@ -325,7 +366,7 @@ export default function Home() {
 
     // Linea divisora
 
-    doc.setDrawColor(255, 255, 255);
+    doc.setDrawColor(82, 82, 82);
     doc.setLineWidth(0.5);
 
     doc.line(marginLeft - 5, yPositionLeft, pageWidth - 130, yPositionLeft);
@@ -373,7 +414,7 @@ export default function Home() {
 
     // Acerca de mí (Columna Derecha)
 
-    doc.setTextColor(20, 63, 114);
+    doc.setTextColor(82, 82, 82);
     doc.setFontSize(24);
     doc.setFont('Roboto-Bold', 'bold');
     doc.text("Acerca de mí", marginRight, yPositionRight);
@@ -389,14 +430,14 @@ export default function Home() {
 
     // Linea divisora
 
-    doc.setDrawColor(20, 63, 114);
+    doc.setDrawColor(82, 82, 82);
     doc.setLineWidth(0.5);
     doc.line(marginRight, yPositionRight, pageWidth - 10, yPositionRight);
     yPositionRight += 12;
 
     // Experiencia Laboral (Columna Derecha)
 
-    doc.setTextColor(20, 63, 114);
+    doc.setTextColor(82, 82, 82);
     doc.setFontSize(24);
     doc.setFont('Roboto-Bold', 'bold');
     doc.text("Experiencia Laboral", marginRight, yPositionRight);
@@ -542,19 +583,6 @@ export default function Home() {
                       className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
-
-                  {/* Campo Página Web */}
-                  <div className="col-span-1">
-                    <label className="block text-gray-600 mb-2">Página Web</label>
-                    <input
-                      type="text"
-                      name="paginaWeb"
-                      value={personalInfo.paginaWeb}
-                      onChange={handlePersonalInfoChange}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-
                   {/* Campo Acerca de mí */}
                   <div className="col-span-2">
                     <label className="block text-gray-600 mb-2">Acerca de mí</label>
