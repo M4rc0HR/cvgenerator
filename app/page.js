@@ -88,7 +88,7 @@ export default function Home() {
 
   //Cursos
   const [cursos, setCursos] = useState([
-    { nombre: "", organizacion: "", nivel: 1 }
+    { categoria: "", nombre: "", organizacion: "", nivel: 1 }
   ]);
 
   const handleCursoChange = (index, updatedCurso) => {
@@ -98,7 +98,7 @@ export default function Home() {
   };
 
   const addCurso = () => {
-    setCursos([...cursos, { nombre: "", organizacion: "", nivel: 1 }]);
+    setCursos([...cursos, { categoria: "", nombre: "", organizacion: "", nivel: 1 }]);
   };
 
   const removeCurso = (index) => {
@@ -386,8 +386,10 @@ export default function Home() {
     cursos.forEach((curso) => {
       // Agrega el texto de la habilidad
       doc.setFont('Roboto-Bold', 'bold');
-      const cursoTexto = `• ${curso.nombre}`;
-      yPositionLeft = addTextWithSpacing(cursoTexto, yPositionLeft - 2, marginLeft);
+      const categoriaTexto = `• ${curso.categoria}`;
+      yPositionLeft = addTextWithSpacing(categoriaTexto, yPositionLeft - 2, marginLeft);
+      const cursoTexto = `${curso.nombre}`;
+      yPositionLeft = addTextWithSpacing(cursoTexto, yPositionLeft - 3, marginLeft + 2);
 
       doc.setFont('Roboto-Regular', 'normal');
       const organizacionLines = doc.splitTextToSize(`${curso.organizacion}`, pageWidth / 2 - 55);
@@ -665,15 +667,25 @@ export default function Home() {
                 </button>
               </section>
 
-
-
-
-
               {/* Cursos */}
               <section className="mb-8">
                 <h2 className="text-2xl font-semibold text-gray-700 mb-4">Cursos</h2>
                 {cursos.map((curso, index) => (
                   <div key={index} className="flex items-center gap-4 mb-2">
+                    {/* Campo para la categoría */}
+                    <select
+                      value={curso.categoria}
+                      onChange={(e) =>
+                        handleCursoChange(index, { ...curso, categoria: e.target.value })
+                      }
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="">Seleccione categoría</option>
+                      <option value="Curso">Curso</option>
+                      <option value="Especialización">Especialización</option>
+                      <option value="Diplomado">Diplomado</option>
+                    </select>
+
                     {/* Campo para el nombre del curso */}
                     <input
                       type="text"
@@ -684,6 +696,7 @@ export default function Home() {
                       placeholder="Nombre del curso"
                       className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
+
                     {/* Campo para la organización */}
                     <input
                       type="text"
@@ -707,6 +720,7 @@ export default function Home() {
                       placeholder="Nivel (1-5)"
                       className="w-20 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
+
                     <button
                       type="button"
                       onClick={() => removeCurso(index)}
@@ -724,7 +738,6 @@ export default function Home() {
                   Añadir Curso
                 </button>
               </section>
-
 
 
               {/* Educacion */}
