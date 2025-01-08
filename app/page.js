@@ -388,6 +388,7 @@ export default function Home() {
       doc.setFont('Roboto-Bold', 'bold');
       const categoriaTexto = `• ${curso.categoria}`;
       yPositionLeft = addTextWithSpacing(categoriaTexto, yPositionLeft - 2, marginLeft);
+      doc.setFont('Roboto-Regular', 'normal');
       const cursoTexto = `${curso.nombre}`;
       yPositionLeft = addTextWithSpacing(cursoTexto, yPositionLeft - 3, marginLeft + 2);
 
